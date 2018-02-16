@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Maze Pathfinder</title>
+    <link rel="stylesheet" href="dist/css/app.min.css">
+  </head>
+  <body>
+    <main>
+      <aside class="controls">
+        <p>
+          <label for="size">Maze size:</label>
+          <input id="size" type="range" min="5" max="10" disabled>
+          <span class="size-label">10</span>
+        </p>
+        <ol>
+          <li># = Wall</li>
+          <li>S = Start square</li>
+          <li>E = End square</li>
+        </ol>
+        <button class="solve">Solve</button>
+      </aside>
+      <canvas class="maze" width="502" height="502"></canvas>
+    </main>
+    <footer>
+      <p><a href="https://github.com/branneman/maze-pathfinder">view source</a></p>
+    </footer>
+    <script src="dist/js/app.min.js"></script>
+  </body>
+</html>

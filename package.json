@@ -1,0 +1,58 @@
+{
+  "name": "maze-pathfinder",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Bran van der Meer <branmovic@gmail.com> (http://bran.name/)",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/branneman/maze-pathfinder.git"
+  },
+  "keywords": ["maze", "pathfinder", "dijkstra", "algorithm"],
+  "scripts": {
+    "build":
+      "npm run build:clean && npm run build:mkdirs && npm run build:css && npm run build:js",
+    "build:clean": "rm -rf dist",
+    "build:mkdirs": "mkdir -p dist/js && mkdir dist/css",
+    "build:css":
+      "postcss src/css/app.css -u postcss-import -u postcss-cssnext -u postcss-csso -o dist/css/app.min.css",
+    "build:js": "npm run build:babelify && npm run build:uglify",
+    "build:babelify":
+      "cross-env BABEL_ENV=production browserify -t babelify src/js/app.js -o dist/js/app.js",
+    "build:uglify":
+      "uglifyjs dist/js/app.js --screw-ie8 -mc -o dist/js/app.min.js",
+    "watch": "onchange \"src/**/*\" -i -- npm run build",
+    "test": "jest",
+    "serve": "http-server"
+  },
+  "babel": {
+    "presets": [
+      [
+        "env",
+        {
+          "targets": {
+            "browsers": ["last 2 versions"],
+            "uglify": true
+          },
+          "useBuiltIns": true
+        }
+      ]
+    ]
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babelify": "^8.0.0",
+    "browserify": "^16.1.0",
+    "cross-env": "^5.1.3",
+    "http-server": "^0.11.1",
+    "jest": "^22.3.0",
+    "onchange": "^3.3.0",
+    "postcss-cli": "^5.0.0",
+    "postcss-cssnext": "^3.1.0",
+    "postcss-csso": "^3.0.0",
+    "postcss-import": "^11.1.0",
+    "uglifyjs": "^2.4.11"
+  }
+}
