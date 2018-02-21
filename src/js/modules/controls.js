@@ -5,7 +5,8 @@ class Controls {
   constructor(element) {
     this.element = element;
     this.sizeElement = query('#size', this.element);
-    this.solveElement = query('.solve', this.element);
+    this.solveElement = query('.controls__solve', this.element);
+    this.resetElement = query('.controls__reset', this.element);
     this._addEventHandlers();
   }
 
@@ -18,9 +19,13 @@ class Controls {
       Observer.publish(this, 'resize', size);
     });
 
-    this.solveElement.addEventListener('click', () => {
-      Observer.publish(this, 'solve');
-    });
+    this.solveElement.addEventListener('click', () =>
+      Observer.publish(this, 'solve')
+    );
+
+    this.resetElement.addEventListener('click', () =>
+      Observer.publish(this, 'reset')
+    );
   }
 }
 

@@ -8,23 +8,22 @@
   <body>
     <main>
       <aside class="controls">
-        <p>
+        <ol class="controls__legenda">
+          <li># = Wall (click a square to add a wall piece)</li>
+          <li>S = Start square</li>
+          <li>E = End square</li>
+        </ol>
+        <p class="controls__size">
           <label for="size">Maze size:</label>
           <input id="size" type="range" min="5" max="10" disabled>
           <span class="size-label">10</span>
         </p>
-        <ol>
-          <li># = Wall</li>
-          <li>S = Start square</li>
-          <li>E = End square</li>
-        </ol>
-        <button class="solve">Solve</button>
+        <button class="controls__btn controls__solve">Solve</button>
+        <button class="controls__btn controls__reset">Reset</button>
+        <a class="controls__btn" href="https://github.com/branneman/maze-pathfinder">Source</a>
       </aside>
       <canvas class="maze" width="502" height="502"></canvas>
     </main>
-    <footer>
-      <p><a href="https://github.com/branneman/maze-pathfinder">view source</a></p>
-    </footer>
     <script src="dist/js/app.min.js"></script>
   </body>
 </html>

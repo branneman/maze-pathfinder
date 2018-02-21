@@ -22,8 +22,8 @@ class Maze {
     const end = findValue(this.maze, 'E');
     if (!start || !end) return;
 
-    shortestPath(this.maze).forEach(pos =>
-      this._drawPosition(this.element, pos, 'O')
+    shortestPath(this.maze).forEach((pos, i, steps) =>
+      this._drawPosition(this.element, pos, steps.length - i)
     );
   }
 
@@ -138,11 +138,10 @@ class Maze {
   _getValueColor(value) {
     return (
       {
-        O: 'crimson',
         S: 'steelblue',
         E: 'forestgreen',
         '#': 'saddlebrown'
-      }[value] || 'black'
+      }[value] || 'crimson'
     );
   }
 }

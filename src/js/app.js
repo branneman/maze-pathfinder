@@ -12,5 +12,6 @@ new class App {
 
     // Observer.subscribe(this.controls, 'resize', size => this.maze.resize(size));
     Observer.subscribe(this.controls, 'solve', () => this.maze.solve());
+    Observer.subscribe(this.controls, 'reset', () => window.location.reload());
   }
 }();
