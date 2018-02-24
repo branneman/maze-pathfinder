@@ -1,15 +1,17 @@
 import { makeGrid, findValue } from '../util/grid';
 import { drawSquareGrid } from '../util/canvas';
 import shortestPath from '../algorithm/dijkstra-shortestpath';
+import Observer from '../util/observer';
 
 const CANVAS_MARGIN = 1;
 const CANVAS_GRID_COLOR = 'gainsboro';
-const CANVAS_FONT = '36px monospaced';
+const CANVAS_FONT = '14px monospaced';
 
 class Maze {
   constructor(element) {
     this.element = element;
-    this.resize(10);
+    this.solved = false;
+    this.reset(20);
     this._addEventHandlers();
   }
 
@@ -17,6 +19,8 @@ class Maze {
    * Find the shortest path through the maze
    */
   solve() {
+    if (this.solved) return;
+
     // We can only proceed with start & end positions
     const start = findValue(this.maze, 'S');
     const end = findValue(this.maze, 'E');
@@ -25,15 +29,22 @@ class Maze {
     shortestPath(this.maze).forEach((pos, i, steps) =>
       this._drawPosition(this.element, pos, steps.length - i)
     );
+
+    this.solved = true;
+    Observer.publish(this, 'solved');
   }
 
   /**
    * Set new square size and reset maze
    * @param {Number} size
    */
-  resize(size) {
+  reset(size) {
+    this.solved = false;
+    Observer.publish(this, 'reset');
+
     this.size = size;
-    this._reset(size);
+    this.maze = makeGrid(size);
+    this._drawGrid(this.element, size);
     this._drawMaze(this.maze);
   }
 
@@ -48,21 +59,9 @@ class Maze {
         event.offsetX,
         event.offsetY
       );
-      if (this.maze[y][x] === '.') {
-        this.maze[y][x] = '#';
-        this._drawPosition(this.element, [x, y], '#');
-      }
+      if (this.solved) return;
+      this._setSquareByCoordinates(this.maze, this.size, this.element, [x, y]);
     });
-  }
-
-  /**
-   * Reset maze to new square size
-   * @private
-   * @param {Number} size
-   */
-  _reset(size) {
-    this.maze = makeGrid(size);
-    this._drawGrid(this.element, size);
   }
 
   /**
@@ -91,6 +90,7 @@ class Maze {
    */
   _drawGrid(canvas, size) {
     const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = CANVAS_GRID_COLOR;
     drawSquareGrid(ctx, size, CANVAS_MARGIN);
   }
@@ -98,16 +98,17 @@ class Maze {
   /**
    * @private
    * @param {HTMLCanvasElement} canvas
-   * @param {Array<Number, Number>} x y
+   * @param {Array<Number, Number>} square
    * @param {String} value
    */
-  _drawPosition(canvas, [x, y], value) {
+  _drawPosition(canvas, square, value) {
     const ctx = canvas.getContext('2d');
 
-    const squareSize = Math.floor((canvas.width - CANVAS_MARGIN) / this.size);
-    const modifier = CANVAS_MARGIN + squareSize / 2;
-    const posX = squareSize * x + modifier;
-    const posY = squareSize * y + modifier;
+    const { squareSize, posX, posY } = this._getSquareSize(
+      canvas,
+      this.size,
+      square
+    );
 
     ctx.font = CANVAS_FONT;
     ctx.textAlign = 'center';
@@ -120,6 +121,29 @@ class Maze {
   }
 
   /**
+   * @private
+   * @param {HTMLCanvasElement} canvas
+   * @param {Number} size
+   * @param {Array<Number, Number>} square
+   */
+  _drawEmptySquare(canvas, size, square) {
+    const ctx = canvas.getContext('2d');
+
+    const { squareSize, posX, posY } = this._getSquareSize(
+      canvas,
+      this.size,
+      square
+    );
+    const offset = squareSize / 2 - 1;
+
+    const oldColor = ctx.fillStyle;
+    ctx.fillStyle = 'white';
+    ctx.fillRect(posX - offset, posY - offset, squareSize - 2, squareSize - 2);
+    ctx.fillStyle = oldColor;
+  }
+
+  /**
+   * @private
    * @param {HTMLCanvasElement} canvas
    * @param {Number} x
    * @param {Number} y
@@ -129,6 +153,40 @@ class Maze {
     const squareX = Math.floor(x / dimension);
     const squareY = Math.floor(y / dimension);
     return [squareX, squareY];
+  }
+
+  /**
+   * @private
+   * @param {Array<Array<String>>} maze
+   * @param {Number} size
+   * @param {HTMLCanvasElement} canvas
+   * @param {Number} x
+   * @param {Number} y
+   */
+  _setSquareByCoordinates(maze, size, canvas, [x, y]) {
+    if (maze[y][x] === '.') {
+      maze[y][x] = '#';
+      this._drawPosition(canvas, [x, y], '#');
+    } else if (maze[y][x] === '#') {
+      maze[y][x] = '.';
+      this._drawEmptySquare(canvas, size, [x, y]);
+    }
+  }
+
+  /**
+   * @private
+   * @param {HTMLCanvasElement} canvas
+   * @param {Number} size
+   * @param {Number} x
+   * @param {Number} y
+   */
+  _getSquareSize(canvas, size, [x, y]) {
+    const squareSize = Math.floor((canvas.width - CANVAS_MARGIN) / size);
+    const modifier = CANVAS_MARGIN + squareSize / 2;
+    const posX = squareSize * x + modifier;
+    const posY = squareSize * y + modifier;
+
+    return { squareSize, posX, posY };
   }
 
   /**
