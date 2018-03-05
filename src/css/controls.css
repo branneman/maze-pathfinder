@@ -13,10 +13,6 @@
   }
 }
 
-.controls__size {
-  display: none;
-}
-
 .controls__btn {
   display: block;
   width: 6em;

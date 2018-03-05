@@ -8,10 +8,16 @@ const CANVAS_GRID_COLOR = 'gainsboro';
 const CANVAS_FONT = '14px monospaced';
 
 class Maze {
-  constructor(element) {
+  /**
+   * @param {HTMLCanvasElement} element
+   * @param {Number} size
+   */
+  constructor(element, size) {
     this.element = element;
+    this.size = size;
     this.solved = false;
-    this.reset(20);
+
+    this.reset();
     this._addEventHandlers();
   }
 
@@ -35,17 +41,38 @@ class Maze {
   }
 
   /**
-   * Set new square size and reset maze
-   * @param {Number} size
+   * Reset maze
    */
-  reset(size) {
+  reset() {
     this.solved = false;
     Observer.publish(this, 'reset');
 
-    this.size = size;
-    this.maze = makeGrid(size);
-    this._drawGrid(this.element, size);
+    this.maze = makeGrid(this.size);
+    this._drawGrid(this.element, this.size);
     this._drawMaze(this.maze);
+  }
+
+  /**
+   * Return maze state as 2D array
+   */
+  getState() {
+    return this.maze;
+  }
+
+  /**
+   * Replace entire maze
+   * @param {Array<Array<String>>} [newState]
+   */
+  update(newState) {
+    // Empty update equals reset
+    if (!newState || newState.length !== 20 || newState[0].length !== 20) {
+      return;
+    }
+
+    this.maze = newState;
+    this._drawGrid(this.element, this.size);
+    this._drawMaze(this.maze);
+    Observer.publish(this, 'updated', this.getState());
   }
 
   /**
@@ -53,15 +80,23 @@ class Maze {
    */
   _addEventHandlers() {
     this.element.addEventListener('click', event => {
-      const [x, y] = this._getSquareByCoordinates(
-        this.element,
-        this.size,
-        event.offsetX,
-        event.offsetY
-      );
-      if (this.solved) return;
-      this._setSquareByCoordinates(this.maze, this.size, this.element, [x, y]);
+      this._onClick(event);
+      Observer.publish(this, 'updated', this.getState());
     });
+  }
+
+  /**
+   * @private
+   * @param {Event.offsetX} Number - Pointer X coordinate relative to element
+   * @param {Event.offsetY} Number - Pointer Y coordinate relative to element
+   */
+  _onClick({ offsetX, offsetY }) {
+    // Maze can't be altered when already solved
+    if (this.solved) return;
+
+    this._updateSquare(
+      this._getSquareByCoordinates(this.element, this.size, [offsetX, offsetY])
+    );
   }
 
   /**
@@ -93,6 +128,16 @@ class Maze {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.strokeStyle = CANVAS_GRID_COLOR;
     drawSquareGrid(ctx, size, CANVAS_MARGIN);
+  }
+
+  /**
+   * Place wall
+   * @private
+   * @param {Number} x
+   * @param {Number} y
+   */
+  _updateSquare([x, y]) {
+    this._setSquareByCoordinates(this.maze, this.size, this.element, [x, y]);
   }
 
   /**
@@ -131,7 +176,7 @@ class Maze {
 
     const { squareSize, posX, posY } = this._getSquareSize(
       canvas,
-      this.size,
+      size,
       square
     );
     const offset = squareSize / 2 - 1;
@@ -145,10 +190,11 @@ class Maze {
   /**
    * @private
    * @param {HTMLCanvasElement} canvas
+   * @param {Number} size
    * @param {Number} x
    * @param {Number} y
    */
-  _getSquareByCoordinates(canvas, size, x, y) {
+  _getSquareByCoordinates(canvas, size, [x, y]) {
     const dimension = canvas.width / size;
     const squareX = Math.floor(x / dimension);
     const squareY = Math.floor(y / dimension);
