@@ -106,8 +106,8 @@ class Maze {
    */
   _drawMaze(maze) {
     // Hardcoded start/end positions
-    maze[1][1] = 'S';
-    maze[maze.length - 2][maze.length - 2] = 'E';
+    maze[0][0] = 'S';
+    maze[maze.length - 1][maze.length - 1] = 'E';
 
     for (let x = 0; x < this.size; x++) {
       for (let y = 0; y < this.size; y++) {
